@@ -1,9 +1,13 @@
 import { Router } from 'express';
 import { UserController } from './user.controller';
-import { UserValidation } from './user.validation';
+import { UpdateUserValidationSchema, UserValidation } from './user.validation';
 import auth from '../../middleware/auth';
 import { UserRole } from './user.constant';
 import { validateRequest } from '../../middleware/validateRequest';
+import { parseBodyForFormData } from '../../middleware/ParseBodyForFormData';
+import { uploadSingleImage } from '../../config/multer.config';
+import { validateFileRequest } from '../../middleware/validateUploadedFile';
+import { UploadedFilesArrayZodSchema } from '../../utils/uploadedFileValidationSchema';
 
 const router = Router();
 
@@ -26,6 +30,16 @@ router.get(
   '/me',
   auth(UserRole.ADMIN, UserRole.CUSTOMER),
   UserController.getMeFromDB,
+);
+
+router.patch(
+  '/update-profile',
+  auth(...Object.values(UserRole)),
+  uploadSingleImage,
+  validateFileRequest(UploadedFilesArrayZodSchema),
+  parseBodyForFormData,
+  validateRequest(UpdateUserValidationSchema),
+  UserController.updateUserProfile,
 );
 
 router.delete('/:id', auth(UserRole.ADMIN), UserController.deleteUser);

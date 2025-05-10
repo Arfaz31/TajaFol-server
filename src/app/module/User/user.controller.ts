@@ -3,6 +3,7 @@ import catchAsync from '../../utils/catchAsync';
 import httpStatus from 'http-status';
 import { UserServices } from './user.service';
 import { sendResponse } from '../../utils/sendResponse';
+import { TImageFiles } from '../../interface/image.interface';
 
 const register = catchAsync(async (req, res) => {
   const { password, customers } = req.body;
@@ -56,6 +57,24 @@ const getMeFromDB = catchAsync(async (req, res) => {
   });
 });
 
+const updateUserProfile = catchAsync(async (req, res) => {
+  const files = req.files as TImageFiles;
+
+  // Extract single files from the fields
+  const profilePhoto = files?.image ? files.image[0] : undefined;
+  const result = await UserServices.updateUserProfileData(
+    req.user,
+    req.body,
+    profilePhoto,
+  );
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Profile updated successfully',
+    data: result,
+  });
+});
+
 const deleteUser = catchAsync(async (req, res) => {
   const { id } = req.params;
   const result = await UserServices.deleteUser(id);
@@ -72,5 +91,6 @@ export const UserController = {
   createAdminIntoDB,
   getAllCustomers,
   getMeFromDB,
+  updateUserProfile,
   deleteUser,
 };

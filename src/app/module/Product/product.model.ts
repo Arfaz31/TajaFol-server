@@ -1,13 +1,23 @@
-import { Schema, model } from 'mongoose'
-import { IProduct, TFeatures } from './product.interface'
+import { Schema, model } from 'mongoose';
+import { IProduct } from './product.interface';
 
-const FeatureSchema = new Schema<TFeatures>({
-  featureName: {
-    type: String,
-    required: [true, 'Feature name is required'],
-    trim: true,
+const FeedbackSchema = new Schema(
+  {
+    averageRating: {
+      type: Number,
+      default: 0,
+      min: [0, 'Rating cannot be negative'],
+      max: [5, 'Rating cannot exceed 5'],
+    },
+    reviews: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'Review',
+      },
+    ],
   },
-})
+  { _id: false },
+);
 
 const ProductSchema = new Schema<IProduct>(
   {
@@ -15,7 +25,6 @@ const ProductSchema = new Schema<IProduct>(
       type: String,
       required: [true, 'Product name is required'],
       trim: true,
-      maxlength: [100, 'Product name cannot exceed 100 characters'],
     },
     slug: {
       type: String,
@@ -24,27 +33,21 @@ const ProductSchema = new Schema<IProduct>(
       trim: true,
       lowercase: true,
     },
-    description: {
+    shortdescription: {
       type: String,
-      required: [true, 'Description is required'],
+      required: [true, 'Short description is required'],
       trim: true,
-      minlength: [10, 'Description should be at least 10 characters'],
     },
-    brand: {
-      type: Schema.Types.ObjectId,
-      ref: 'Brand',
-    },
-    category: {
-      type: Schema.Types.ObjectId,
-      ref: 'Category',
+    broaddescription: {
+      type: String,
+      required: [true, 'Broad description is required'],
+      trim: true,
+      minlength: [100, 'Broad description should be at least 100 characters'],
     },
     subcategory: {
       type: Schema.Types.ObjectId,
       ref: 'Subcategory',
-    },
-    variant: {
-      type: Schema.Types.ObjectId,
-      ref: 'Variant',
+      required: true,
     },
     price: {
       type: Number,
@@ -57,26 +60,9 @@ const ProductSchema = new Schema<IProduct>(
       min: [0, 'Quantity cannot be negative'],
       default: 0,
     },
-    stock: {
+    discountPrice: {
       type: Number,
-      required: [true, 'Stock is required'],
-      min: [0, 'Stock cannot be negative'],
-      default: 0,
-    },
-    discountPercentage: {
-      type: Number,
-      min: [0, 'Discount percentage cannot be negative'],
-      max: [100, 'Discount percentage cannot exceed 100%'],
-      default: 0,
-    },
-    tax: {
-      type: Number,
-      min: [0, 'Tax cannot be negative'],
-      default: 0,
-    },
-    features: {
-      type: [FeatureSchema],
-      default: [],
+      min: [0, 'Discount price cannot be negative'],
     },
     images: {
       type: [String],
@@ -90,11 +76,17 @@ const ProductSchema = new Schema<IProduct>(
       type: Boolean,
       default: false,
     },
-    averageRating: {
-      type: Number,
-      default: 0,
-      min: [0, 'Rating cannot be negative'],
-      max: [5, 'Rating cannot exceed 5'],
+    isTrending: {
+      type: Boolean,
+      default: false,
+    },
+    isUpcoming: {
+      type: Boolean,
+      default: false,
+    },
+    feedback: {
+      type: FeedbackSchema,
+      default: () => ({}),
     },
     totalReviews: {
       type: Number,
@@ -104,7 +96,7 @@ const ProductSchema = new Schema<IProduct>(
   },
   {
     timestamps: true,
-  }
-)
+  },
+);
 
-export const Product = model<IProduct>('Product', ProductSchema)
+export const Product = model<IProduct>('Product', ProductSchema);

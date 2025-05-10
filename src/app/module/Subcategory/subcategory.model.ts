@@ -15,7 +15,6 @@ const subcategorySchema = new Schema<ISubcategory>(
     },
     description: {
       type: String,
-      required: true,
     },
     slug: {
       type: String,
@@ -25,7 +24,7 @@ const subcategorySchema = new Schema<ISubcategory>(
       trim: true,
       index: true,
     },
-    imageUrl: {
+    image: {
       type: String,
       required: true,
     },

@@ -4,7 +4,8 @@ import { searchableFields } from './category.constant';
 import QueryBuilder from '../../Builder/QueryBuilder';
 import { ICategory } from './category.interface';
 import { TImageFile } from '../../interface/image.interface';
-
+import AppError from '../../Error/AppError';
+import httpStatus from 'http-status';
 const createCategory = async (payload: ICategory, image: TImageFile) => {
   if (image) {
     payload.image = image.path;
@@ -13,7 +14,7 @@ const createCategory = async (payload: ICategory, image: TImageFile) => {
     categoryName: payload.categoryName,
   });
   if (isExist) {
-    throw new Error('Category has already existed');
+    throw new AppError(httpStatus.BAD_REQUEST, 'Category has already existed');
   }
 
   const result = await Category.create(payload);
@@ -52,8 +53,11 @@ const updateCategory = async (
   const isExist = await Category.findOne({
     _id: id,
   });
-  if (isExist) {
-    throw new Error('Category has already existed');
+  if (!isExist) {
+    throw new AppError(
+      httpStatus.NOT_FOUND,
+      'Category does not exit with this id',
+    );
   }
 
   const result = await Category.findByIdAndUpdate(id, payload, { new: true });

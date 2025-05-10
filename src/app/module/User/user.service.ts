@@ -15,6 +15,8 @@ import AppError from '../../Error/AppError';
 import { config } from '../../config';
 import { jwtHelpers } from '../../utils/JWTHelpers';
 import QueryBuilder from '../../Builder/QueryBuilder';
+import { JwtPayload } from 'jsonwebtoken';
+import { TImageFile } from '../../interface/image.interface';
 
 const generateUserId = (name: string): string => {
   const cleanName = name.trim().split(' ').join('').toLowerCase();
@@ -180,6 +182,21 @@ const getMe = async (id: string) => {
   }
 };
 
+const updateUserProfileData = async (
+  user: JwtPayload, // Logged-in user
+  data: Partial<IUser>,
+  profileImg?: TImageFile,
+) => {
+  const profileImagePath = (profileImg && profileImg.path) || '';
+
+  const result = await User.findOneAndUpdate(
+    { _id: user.id },
+    { ...data, profileImg: profileImagePath },
+    { new: true },
+  );
+  return result;
+};
+
 //soft delete
 const deleteUser = async (id: string) => {
   const _id = id;
@@ -230,5 +247,6 @@ export const UserServices = {
   createAdmin,
   getAllCustomersFromDB,
   getMe,
+  updateUserProfileData,
   deleteUser,
 };
