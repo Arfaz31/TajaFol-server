@@ -1,19 +1,19 @@
 import { Schema, model } from 'mongoose';
-import { TFeedback } from './feedback.inteface';
+import { TReview } from './feedback.inteface';
 
-const feedbackSchema = new Schema<TFeedback>(
+const reviewSchema = new Schema<TReview>(
   {
-    course: {
+    productId: {
       type: Schema.Types.ObjectId,
-      ref: 'Course',
+      ref: 'Product',
       required: true,
     },
-    user: {
+    userId: {
       type: Schema.Types.ObjectId,
       ref: 'User',
       required: true,
     },
-    content: {
+    review: {
       type: String,
       required: true,
     },
@@ -29,4 +29,4 @@ const feedbackSchema = new Schema<TFeedback>(
   },
 );
 
-export const Feedback = model<TFeedback>('Feedback', feedbackSchema);
+export const Review = model<TReview>('Review', reviewSchema);

@@ -1,8 +1,8 @@
 import { Types } from 'mongoose';
 
-export type TFeedback = {
+export type TReview = {
   id?: string;
-  course: Types.ObjectId;
-  user: Types.ObjectId;
-  content: string;
+  productId: Types.ObjectId;
+  userId: Types.ObjectId;
+  review: string;
 };

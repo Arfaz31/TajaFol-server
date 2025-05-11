@@ -1,94 +1,94 @@
 import httpStatus from 'http-status';
 import AppError from '../../Error/AppError';
-import { TFeedback } from './feedback.inteface';
-import { Feedback } from './feedback.model';
-import { Course } from '../Course/course.model';
 
-const createFeedbackIntoDB = async (payload: TFeedback) => {
-  const result = await Feedback.create(payload);
-  // Add the Feedback ID to the Feedbacks array in the Course document
-  await Course.findByIdAndUpdate(payload.course, {
-    $addToSet: { feedback: result._id }, // Use result._id here
+import { Product } from '../Product/product.model';
+import { TReview } from './feedback.inteface';
+import { Review } from './feedback.model';
+
+const createReviewIntoDB = async (payload: TReview) => {
+  const result = await Review.create(payload);
+
+  await Product.findByIdAndUpdate(payload.productId, {
+    $addToSet: { reviews: result._id }, // Use result._id here
   });
   return result;
 };
 
-const updateFeedbackIntoDB = async (
-  feedbackId: string,
+const updateReviewIntoDB = async (
+  reviewId: string,
   userId: string,
-  content: string,
+  review: string,
 ) => {
-  const feedback = await Feedback.findOne({ _id: feedbackId, user: userId });
-  if (!feedback) {
+  const reviewData = await Review.findOne({ _id: reviewId, user: userId });
+  if (!reviewData) {
     throw new AppError(
       httpStatus.NOT_FOUND,
-      'Feedback not found or unauthorized access',
+      'Review not found or unauthorized access',
     );
   }
 
-  feedback.content = content;
-  await feedback.save();
-  return feedback;
+  reviewData.review = review;
+  await reviewData.save();
+  return reviewData;
 };
 
 //delete Feedback as a Feedbacker in other Course
-const deleteFeedbackInDB = async (feedbackId: string, userId: string) => {
-  const feedback = await Feedback.findOne({ _id: feedbackId, user: userId });
-  if (!feedback) {
+const deleteReviewInDB = async (reviewId: string, userId: string) => {
+  const reviewData = await Review.findOne({ _id: reviewId, user: userId });
+  if (!reviewData) {
     throw new AppError(
       httpStatus.NOT_FOUND,
       'Feedback not found or unauthorized access',
     );
   }
-  await Course.findByIdAndUpdate(feedback.course, {
-    $pull: { feedback: feedback._id },
+  await Product.findByIdAndUpdate(reviewData.productId, {
+    $pull: { reviews: reviewData._id },
   });
 
-  await Feedback.deleteOne({ _id: feedbackId });
+  await Review.deleteOne({ _id: reviewId });
   return { success: true };
 };
 
-const deleteFeedbackAsCourseOwner = async (
-  feedbackId: string,
-  courseId: string,
-  ownerId: string,
+const deleteReviewkAsProductOwner = async (
+  reviewId: string,
+  productId: string,
+  adminId: string,
 ) => {
-  const course = await Course.findOne({ _id: courseId, user: ownerId });
-  if (!Course) {
+  const product = await Product.findOne({ _id: productId, user: adminId });
+  if (!product) {
     throw new AppError(
       httpStatus.FORBIDDEN,
-      'You are not the owner of this Course',
+      'You are not the owner of this product',
     );
   }
-  await Course.findByIdAndUpdate(course?._id, {
-    $pull: { feedback: feedbackId },
+  await Product.findByIdAndUpdate(product?._id, {
+    $pull: { reviews: reviewId },
   });
 
-  await Feedback.deleteOne({ _id: feedbackId, course: courseId });
+  await Review.deleteOne({ _id: reviewId, productId: productId });
   return { success: true };
 };
 
-const getFeedbacksByCourseId = async (courseId: string) => {
-  const feedbacks = await Feedback.find({ course: courseId })
-    .populate('user', 'name email')
+const getReviewsByProductId = async (productId: string) => {
+  const reviewData = await Review.find({ productId: productId })
+    .populate('userId', 'name email')
     .populate({
-      path: 'course',
-      select: '_id title description',
-      populate: { path: 'teacher', select: '_id name email' },
+      path: 'productId',
+      select: '_id productName sku price images isActive averageRating',
     });
-  return feedbacks;
+  return reviewData;
 };
 
-const getTotalFeedbacksByCourseId = async (courseId: string) => {
-  const totalFeedbacks = await Feedback.countDocuments({ course: courseId });
-  return totalFeedbacks;
+const getTotalReviewsByProductId = async (productId: string) => {
+  const totalReviews = await Review.countDocuments({ productId: productId });
+  return totalReviews;
 };
 
 export const FeedbackServices = {
-  createFeedbackIntoDB,
-  updateFeedbackIntoDB,
-  deleteFeedbackInDB,
-  deleteFeedbackAsCourseOwner,
-  getFeedbacksByCourseId,
-  getTotalFeedbacksByCourseId,
+  createReviewIntoDB,
+  updateReviewIntoDB,
+  deleteReviewInDB,
+  deleteReviewkAsProductOwner,
+  getReviewsByProductId,
+  getTotalReviewsByProductId,
 };

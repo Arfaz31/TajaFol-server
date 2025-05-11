@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import auth from '../../middleware/auth';
-import { USER_ROLE } from '../User/user.constant';
+import { UserRole } from '../User/user.constant';
 import { validateRequest } from '../../middleware/validateRequest';
 import { FeedbackValidation } from './feedback.validation';
 import { FeedbackController } from './feedback.controller';
@@ -9,46 +9,46 @@ const router = Router();
 
 // Create a feedback
 router.post(
-  '/create-feedback',
-  auth(...Object.values(USER_ROLE)),
+  '/create-review',
+  auth(...Object.values(UserRole)),
   validateRequest(FeedbackValidation.createFeedbackZodSchema),
-  FeedbackController.createFeedback,
+  FeedbackController.createReviewIntoDB,
 );
 
 // Update a feedback
 router.patch(
-  '/update-feedback/:feedbackId',
-  auth(...Object.values(USER_ROLE)),
+  '/update-review/:reviewId',
+  auth(...Object.values(UserRole)),
   validateRequest(FeedbackValidation.updateFeedbackZodSchema),
-  FeedbackController.updateFeedback,
+  FeedbackController.updateReview,
 );
 
-// Delete a feedback by the student
+// Delete a feedback by the customer
 router.delete(
-  '/delete-feedback/:feedbackId',
-  auth(USER_ROLE.STUDENT),
+  '/delete-review/:reviewId',
+  auth(UserRole.CUSTOMER),
   FeedbackController.deleteFeedback,
 );
 
-// Delete a feedback by the course owner
+// Delete a feedback by the admin
 router.delete(
-  '/course-owner-delete/:feedbackId/:courseId',
-  auth(USER_ROLE.TEACHER),
-  FeedbackController.deleteFeedbackAscourseOwner,
+  '/delete-review-by-admin/:reviewId/:productId',
+  auth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  FeedbackController.deleteReviewkAsProductOwner,
 );
 
-// Get feedbacks by course ID
+// Get feedbacks by product ID
 router.get(
-  '/get-all-feedback/:courseId',
-  auth(...Object.values(USER_ROLE)),
-  FeedbackController.getFeedbacks,
+  '/get-all-review/:productId',
+  auth(...Object.values(UserRole)),
+  FeedbackController.getReviews,
 );
 
-// Get total feedback count by Course ID
+// Get total feedback count by productId
 router.get(
-  '/get-total-feedback/:postId',
-  auth(...Object.values(USER_ROLE)),
-  FeedbackController.getTotalFeedback,
+  '/get-total-review/:productId',
+  auth(...Object.values(UserRole)),
+  FeedbackController.getTotalReview,
 );
 
 export const FeedbackRoutes = router;

@@ -3,97 +3,97 @@ import catchAsync from '../../utils/catchAsync';
 import { sendResponse } from '../../utils/sendResponse';
 import { FeedbackServices } from './feedback.services';
 
-const createFeedback = catchAsync(async (req, res) => {
-  const { course, content } = req.body;
+const createReviewIntoDB = catchAsync(async (req, res) => {
+  const { productId, review } = req.body;
   const userId = req.user.id;
-  const FeedbackData = { course, user: userId, content };
+  const reviewData = { productId, userId: userId, review };
 
-  const result = await FeedbackServices.createFeedbackIntoDB(FeedbackData);
+  const result = await FeedbackServices.createReviewIntoDB(reviewData);
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
-    message: 'Feedback created successfully',
+    message: 'Review created successfully',
     data: result,
   });
 });
 
-const updateFeedback = catchAsync(async (req, res) => {
-  const { feedbackId } = req.params;
-  const { content } = req.body;
+const updateReview = catchAsync(async (req, res) => {
+  const { reviewId } = req.params;
+  const { review } = req.body;
   const userId = req.user.id;
 
-  const result = await FeedbackServices.updateFeedbackIntoDB(
-    feedbackId,
+  const result = await FeedbackServices.updateReviewIntoDB(
+    reviewId,
     userId,
-    content,
+    review,
   );
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
-    message: 'Feedback updated successfully',
+    message: 'Review updated successfully',
     data: result,
   });
 });
 
 const deleteFeedback = catchAsync(async (req, res) => {
-  const { feedbackId } = req.params;
+  const { reviewId } = req.params;
   const userId = req.user.id;
 
-  const result = await FeedbackServices.deleteFeedbackInDB(feedbackId, userId);
+  const result = await FeedbackServices.deleteReviewInDB(reviewId, userId);
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
-    message: 'Feedback deleted successfully',
+    message: 'Review deleted successfully',
     data: result,
   });
 });
 
-const deleteFeedbackAscourseOwner = catchAsync(async (req, res) => {
-  const { feedbackId, courseId } = req.params;
+const deleteReviewkAsProductOwner = catchAsync(async (req, res) => {
+  const { reviewId, productId } = req.params;
   const ownerId = req.user.id;
 
-  const result = await FeedbackServices.deleteFeedbackAsCourseOwner(
-    feedbackId,
-    courseId,
+  const result = await FeedbackServices.deleteReviewkAsProductOwner(
+    reviewId,
+    productId,
     ownerId,
   );
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
-    message: 'Feedback deleted by course owner successfully',
+    message: 'Review deleted by admin successfully',
     data: result,
   });
 });
 
-const getFeedbacks = catchAsync(async (req, res) => {
-  const { courseId } = req.params;
+const getReviews = catchAsync(async (req, res) => {
+  const { productId } = req.params;
 
-  const result = await FeedbackServices.getFeedbacksByCourseId(courseId);
+  const result = await FeedbackServices.getReviewsByProductId(productId);
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
-    message: 'Feedbacks retrieved successfully',
+    message: 'Review retrieved successfully',
     data: result,
   });
 });
 
-const getTotalFeedback = catchAsync(async (req, res) => {
-  const { courseId } = req.params;
+const getTotalReview = catchAsync(async (req, res) => {
+  const { productId } = req.params;
 
-  const result = await FeedbackServices.getTotalFeedbacksByCourseId(courseId);
+  const result = await FeedbackServices.getTotalReviewsByProductId(productId);
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
-    message: 'Total Feedbacks count retrieved successfully',
+    message: 'Total Reviews count retrieved successfully',
     data: result,
   });
 });
 
 export const FeedbackController = {
-  createFeedback,
-  updateFeedback,
+  createReviewIntoDB,
+  updateReview,
   deleteFeedback,
-  deleteFeedbackAscourseOwner,
-  getFeedbacks,
-  getTotalFeedback,
+  deleteReviewkAsProductOwner,
+  getReviews,
+  getTotalReview,
 };
