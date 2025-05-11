@@ -2,7 +2,7 @@ import { Types } from 'mongoose';
 
 export interface IProduct {
   productName: string;
-  slug: string;
+  sku: string;
   shortdescription: string;
   broaddescription: string;
   subcategory: Types.ObjectId;
@@ -14,9 +14,8 @@ export interface IProduct {
   isNewArrival?: boolean;
   isTrending?: boolean;
   isUpcoming?: boolean;
-  feedback?: {
-    averageRating: number;
-    reviews: Types.ObjectId[];
-  };
+  averageRating: number;
+  reviews: Types.ObjectId[];
+
   totalReviews?: number;
 }

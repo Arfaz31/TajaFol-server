@@ -27,6 +27,7 @@ const getAllSubcategory = catchAsync(async (req, res) => {
     statusCode: httpStatus.CREATED,
     success: true,
     message: 'SubCategory retrieved successfully',
+    meta: result?.meta,
     data: result,
   });
 });

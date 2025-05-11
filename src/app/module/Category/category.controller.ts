@@ -25,6 +25,7 @@ const getAllCategory = catchAsync(async (req, res) => {
     statusCode: httpStatus.OK,
     success: true,
     message: 'All categories data retrieve successfully',
+    meta: result?.meta,
     data: result,
   });
 });

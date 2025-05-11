@@ -1,24 +1,6 @@
 import { Schema, model } from 'mongoose';
 import { IProduct } from './product.interface';
 
-const FeedbackSchema = new Schema(
-  {
-    averageRating: {
-      type: Number,
-      default: 0,
-      min: [0, 'Rating cannot be negative'],
-      max: [5, 'Rating cannot exceed 5'],
-    },
-    reviews: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: 'Review',
-      },
-    ],
-  },
-  { _id: false },
-);
-
 const ProductSchema = new Schema<IProduct>(
   {
     productName: {
@@ -26,9 +8,9 @@ const ProductSchema = new Schema<IProduct>(
       required: [true, 'Product name is required'],
       trim: true,
     },
-    slug: {
+    sku: {
       type: String,
-      required: [true, 'Slug is required'],
+      required: [true, 'Sku is required'],
       unique: true,
       trim: true,
       lowercase: true,
@@ -84,10 +66,18 @@ const ProductSchema = new Schema<IProduct>(
       type: Boolean,
       default: false,
     },
-    feedback: {
-      type: FeedbackSchema,
-      default: () => ({}),
+    averageRating: {
+      type: Number,
+      default: 0,
+      min: [0, 'Rating cannot be negative'],
+      max: [5, 'Rating cannot exceed 5'],
     },
+    reviews: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'Feedback',
+      },
+    ],
     totalReviews: {
       type: Number,
       default: 0,

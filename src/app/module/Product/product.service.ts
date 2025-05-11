@@ -1,192 +1,212 @@
-import { Request } from 'express'
-import { Product } from './product.model'
-import { AppError } from '../../Error/AppError'
-import httpStatus from 'http-status'
-import mongoose, { Types } from 'mongoose'
-import { Category } from '../Category/category.model'
-import { Subcategory } from '../Subcategory/subcategory.model'
-import { Brand } from '../Brand/brand.model'
-import QueryBuilder from '../../builder/QueryBuilder'
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
-interface CustomFile extends Express.Multer.File {
-  path: string
-}
+import { Product } from './product.model';
+import httpStatus from 'http-status';
+import { Category } from '../Category/category.model';
+import { Subcategory } from '../Subcategory/subcategory.model';
+import AppError from '../../Error/AppError';
+import { IProduct } from './product.interface';
+import QueryBuilder from '../../Builder/QueryBuilder';
 
-const createProductIntoDB = async (req: Request) => {
-  const payload = req.body
-  const files = req.files as { [fieldname: string]: CustomFile[] }
-
-  if (files) {
-    payload.images = files['product-Image']?.map((file: any) => file.path)
+const createProductIntoDB = async (
+  payload: Record<string, any>,
+  files: { [key: string]: Express.Multer.File[] },
+): Promise<IProduct> => {
+  // Check if product with same SKU already exists
+  const isExistBySku = await Product.findOne({ sku: payload.sku });
+  if (isExistBySku) {
+    throw new AppError(
+      httpStatus.CONFLICT,
+      'Product with this SKU already exists',
+    );
   }
 
-  if (payload.category) {
-    const checkCategoryExists = await Category.findOne({
-      _id: payload.category,
-    })
-    if (!checkCategoryExists) {
-      throw new Error('Category does not exists')
-    }
+  // Process images from uploaded files
+  if (files && files['Product-Images'] && files['Product-Images'].length > 0) {
+    payload.images = files['Product-Images'].map((file) => file.path);
+  } else {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'At least one product image is required',
+    );
   }
 
+  // Validate subcategory exists
   if (payload.subcategory) {
-    const checkSubCategoryExists = await Subcategory.findOne({
-      _id: payload.subcategory,
-    })
+    const checkSubCategoryExists = await Subcategory.findById(
+      payload.subcategory,
+    );
     if (!checkSubCategoryExists) {
-      throw new Error('Subcategory does not exists')
+      throw new AppError(httpStatus.NOT_FOUND, 'Subcategory does not exist');
     }
+  } else {
+    throw new AppError(httpStatus.BAD_REQUEST, 'Subcategory is required');
   }
 
-  if (payload.brand) {
-    const checkBrandExists = await Brand.findOne({ _id: payload.brand })
-    if (!checkBrandExists) {
-      throw new Error('Brand does not exists')
-    }
-  }
-
-  const isExist = await Product.findOne({
-    productName: payload.productName,
-  })
-  if (isExist) {
-    throw new Error('Product already exists')
-  }
-
-  const result = await Product.create(payload)
-  return result
-}
+  // Create product
+  const result = await Product.create(payload);
+  return result;
+};
 
 const getAllProducts = async (query: Record<string, unknown>) => {
-  const searchAbleFields = ['productName', 'description']
+  const searchableFields = ['productName', 'description'];
 
-  // Resolve searchId based on category, subcategory, or brand
-  let searchId
-  if (query?.category) {
-    const category = await Category.findOne({
-      categoryName: { $regex: query?.category, $options: 'i' },
-    }).select('_id')
-    searchId = category?._id
-  } else if (query?.subcategory) {
-    const subcategory = await Subcategory.findOne({
-      subcategoryName: { $regex: query?.subcategory, $options: 'i' },
-    }).select('_id')
-    searchId = subcategory?._id
-  } else if (query?.brand) {
-    const brand = await Brand.findOne({
-      brandName: { $regex: query?.brand, $options: 'i' },
-    }).select('_id')
-    searchId = brand?._id
-  }
+  // Step 1: Handle category/subcategory
+  const [category, subcategory] = await Promise.all([
+    query?.category
+      ? Category.findOne({
+          categoryName: { $regex: query.category as string, $options: 'i' },
+        }).select('_id')
+      : null,
+    query?.subcategory
+      ? Subcategory.findOne({
+          subcategoryName: {
+            $regex: query.subcategory as string,
+            $options: 'i',
+          },
+        }).select('_id')
+      : null,
+  ]);
 
-  // Construct filters for category, subcategory, and brand
-  const filters = {
-    ...(query?.category ? { category: searchId } : {}),
-    ...(query?.subcategory ? { subcategory: searchId } : {}),
-    ...(query?.brand ? { brand: searchId } : {}),
-  }
+  // Step 2: Build the base query with filters
+  const baseQuery = {
+    ...(category && { category: category._id }),
+    ...(subcategory && { subcategory: subcategory._id }),
+  };
 
-  // Construct search query for searchTerm
-  let searchQuery = {}
+  // Step 3: Build the search query
+  let searchQuery = {};
   if (query?.searchTerm) {
+    const searchTerm = query.searchTerm as string;
     searchQuery = {
       $or: [
-        ...searchAbleFields.map(field => ({
-          [field]: { $regex: query?.searchTerm, $options: 'i' },
+        ...searchableFields.map((field) => ({
+          [field]: { $regex: searchTerm, $options: 'i' },
         })),
         {
           features: {
             $elemMatch: {
-              featureName: { $regex: query?.searchTerm, $options: 'i' },
+              featureName: { $regex: searchTerm, $options: 'i' },
             },
           },
         },
       ],
-    }
+    };
   }
 
-  //search by price range
+  // Step 4: Handle price range filter
   if (query?.price && typeof query.price === 'string') {
-    const priceRange = query?.price?.split('-')
-    const minPrice = Number(priceRange[0])
-    const maxPrice = Number(priceRange[1])
+    const [minPrice, maxPrice] = query.price.split('-').map(Number);
     searchQuery = {
       ...searchQuery,
       price: { $gte: minPrice, $lte: maxPrice },
+    };
+  }
+
+  // Step 5: Combine queries
+  const finalQuery = {
+    ...baseQuery,
+    ...(Object.keys(searchQuery).length > 0 && searchQuery),
+  };
+
+  // Step 6: Use QueryBuilder with population
+  const productQuery = new QueryBuilder(
+    Product.find(finalQuery).populate({
+      path: 'subcategory',
+      populate: {
+        path: 'category',
+        model: 'Category',
+      },
+    }),
+    query,
+  );
+
+  const result = await productQuery
+    .search(searchableFields)
+    .filter()
+    .sort()
+    .paginate()
+    .fields().modelQuery;
+
+  const meta = await productQuery.countTotal();
+
+  return {
+    meta,
+    result,
+  };
+};
+
+const getSingleProduct = async (id: string) => {
+  const result = await Product.findById(id).populate({
+    path: 'subcategory',
+    populate: {
+      path: 'category',
+      model: 'Category',
+    },
+  });
+
+  return result;
+};
+
+const updateProduct = async (
+  id: string,
+  payload: Record<string, any>,
+  files: { [key: string]: Express.Multer.File[] },
+): Promise<IProduct | null> => {
+  if (!id) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'Product ID is required');
+  }
+
+  // Check if product exists
+  const isExist = await Product.findById(id);
+  if (!isExist) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Product does not exist');
+  }
+
+  // Process images if provided
+  if (files && files['Product-Images'] && files['Product-Images'].length > 0) {
+    payload.images = files['Product-Images'].map((file) => file.path);
+  }
+
+  // Validate subcategory exists if updating it
+  if (
+    payload.subcategory &&
+    payload.subcategory !== isExist.subcategory.toString()
+  ) {
+    const checkSubCategoryExists = await Subcategory.findById(
+      payload.subcategory,
+    );
+    if (!checkSubCategoryExists) {
+      throw new AppError(httpStatus.NOT_FOUND, 'Subcategory does not exist');
     }
   }
 
-  // Combine filters and searchQuery using $and
-  const finalQuery = {
-    $and: [{ ...filters }, { ...searchQuery }],
-  }
-
-  // Use QueryBuilder to handle final query
-  const queryBuilder = new QueryBuilder(Product.find(finalQuery), query)
-  const result = await queryBuilder.sort().pagination().fields().modelQuery
-
-  const metaData = await queryBuilder.countTotal()
-
-  return {
-    meta: metaData,
-    result, // This now includes data after QueryBuilder processing
-  }
-}
-
-const getSingleProduct = async (id: string) => {
-  const result = await Product.findById(id)
-  // const result = await Product.aggregate([
-  //   { $match: { _id: new Types.ObjectId(id) } },
-  //   {
-  //     $lookup: {
-  //       from: 'variants',
-  //       localField: '_id',
-  //       foreignField: 'productId',
-  //       as: 'variant',
-  //     },
+  // Filter out undefined, null, or empty string values
+  // const filteredPayload = Object.entries(payload).reduce(
+  //   (acc, [key, value]) => {
+  //     if (value !== undefined && value !== null && value !== '' && key !== 'id') {
+  //       acc[key] = value;
+  //     }
+  //     return acc;
   //   },
-  // ])
-  return result
-}
+  //   {} as Record<string, any>
+  // );
 
-const updateProduct = async (req: Request) => {
-  const { id: _id } = req.params
-  const payload = req.body
-
-  const isExist = await Product.findById(_id)
-  if (!isExist) {
-    throw new AppError(httpStatus.NOT_FOUND, 'Product does not exist')
-  }
-
-  // Process multiple images if available
-  let files
-  if (req.files && Array.isArray(req.files)) {
-    files = req.files as Express.Multer.File[]
-    payload.images = files.map(file => file.path)
-  }
-
-  const filteredPayload = Object.entries(payload).reduce(
-    (acc, [key, value]) => {
-      if (value !== undefined && value !== null && value !== '') {
-        acc[key] = value
-      }
-      return acc
-    },
-    {} as Record<string, any>
-  )
-
-  const result = await Product.findOneAndUpdate({ _id }, filteredPayload, {
+  // Update product
+  const result = await Product.findByIdAndUpdate(id, payload, {
     new: true,
-  })
+    runValidators: true,
+  });
 
-  return result
-}
+  return result;
+};
 
 const deleteProduct = async (id: string) => {
-  const _id = id
+  const _id = id;
 
-  const isExist = await Product.findById(_id)
+  const isExist = await Product.findById(_id);
   if (!isExist) {
-    throw new AppError(httpStatus.NOT_FOUND, 'Product does not exist')
+    throw new AppError(httpStatus.NOT_FOUND, 'Product does not exist');
   }
 
   const result = await Product.findByIdAndUpdate(
@@ -194,10 +214,10 @@ const deleteProduct = async (id: string) => {
     { isDeleted: true, isActive: false },
     {
       new: true,
-    }
-  )
-  return result
-}
+    },
+  );
+  return result;
+};
 
 const getNewArrivals = async () => {
   const result = await Product.find({
@@ -205,40 +225,19 @@ const getNewArrivals = async () => {
     isActive: true,
     isNewArrival: true,
   })
-    .populate('brand')
-    .populate('category')
-    .populate('subcategory')
+
+    .populate({
+      path: 'subcategory',
+      populate: {
+        path: 'category',
+        model: 'Category',
+      },
+    })
     .sort({ createdAt: -1 })
-    .limit(10)
+    .limit(10);
 
-  return result
-}
-
-const getProductsByCategory = async (categoryId: string) => {
-  const result = await Product.find({
-    category: categoryId,
-    isDeleted: false,
-    isActive: true,
-  })
-    .populate('brand')
-    .populate('category')
-    .populate('subcategory')
-
-  return result
-}
-
-const getProductsByBrand = async (brandId: string) => {
-  const result = await Product.find({
-    brand: brandId,
-    isDeleted: false,
-    isActive: true,
-  })
-    .populate('brand')
-    .populate('category')
-    .populate('subcategory')
-
-  return result
-}
+  return result;
+};
 
 export const ProductService = {
   createProductIntoDB,
@@ -247,6 +246,4 @@ export const ProductService = {
   updateProduct,
   deleteProduct,
   getNewArrivals,
-  getProductsByCategory,
-  getProductsByBrand,
-}
+};
