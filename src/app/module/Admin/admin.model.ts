@@ -23,10 +23,7 @@ const adminSchema = new Schema<IAdmin>(
       required: true,
       unique: true,
     },
-    gender: {
-      type: String,
-      enum: ['Male', 'Female'],
-    },
+
     emergencyContact: {
       type: String,
       required: true,

@@ -166,7 +166,7 @@ const getAllCustomersFromDB = async (query: Record<string, unknown>) => {
 const getMe = async (id: string) => {
   const isUserExist = await User.findOne({ _id: id });
   if (!isUserExist) {
-    throw new AppError(httpStatus.BAD_REQUEST, 'User not found');
+    throw new AppError(httpStatus.BAD_REQUEST, 'User with this id not found');
   }
 
   if (isUserExist.role === UserRole.ADMIN) {

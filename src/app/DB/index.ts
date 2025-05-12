@@ -1,14 +1,12 @@
 import { config } from '../config';
-import { USER_ROLE } from '../module/User/user.constant';
+import { UserRole } from '../module/User/user.constant';
 import { User } from '../module/User/user.model';
 
 const superAdminData = {
-  name: config.SUPERADMIN.NAME,
-  userName: config.SUPERADMIN.USERNAME,
+  userId: config.SUPERADMIN.USERNAME,
   email: config.SUPERADMIN.EMAIL,
   contact: config.SUPERADMIN.CONTACT,
   password: config.SUPERADMIN.PASSWORD,
-  gender: config.SUPERADMIN.GENDER,
   role: config.SUPERADMIN.ROLE,
   isDeleted: config.SUPERADMIN.IS_DELETED,
 };
@@ -16,7 +14,7 @@ const superAdminData = {
 export const seedingSuperAdmin = async () => {
   try {
     const isSuperAtcAdminExits = await User.findOne({
-      role: USER_ROLE.SUPER_ADMIN,
+      role: UserRole.SUPER_ADMIN,
     });
 
     if (!isSuperAtcAdminExits) {

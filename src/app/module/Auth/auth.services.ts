@@ -29,7 +29,7 @@ import { JwtPayload, Secret } from 'jsonwebtoken';
 // };
 
 const login = async (payload: TAuth) => {
-  const user = await User.findOne({ email: payload.email });
+  const user = await User.findOne({ contact: payload.contact });
   if (!user) {
     throw new AppError(httpStatus.NOT_FOUND, 'User not found');
   }

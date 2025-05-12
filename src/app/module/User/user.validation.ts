@@ -8,9 +8,7 @@ const customerSchemaValidation = z.object({
     customers: z.object({
       fullName: z.string().min(1, 'Full name is required'),
       email: z.string().email('Invalid email format'),
-      contactNumber: z
-        .string()
-        .min(11, 'Contact number must be at least 11 digits'),
+      contact: z.string().min(11, 'Contact number must be at least 11 digits'),
       emergencyContact: z
         .string()
         .min(11, 'Emergency contact must be at least 11 digits'),
@@ -21,11 +19,9 @@ const customerSchemaValidation = z.object({
 
 export const UpdateUserValidationSchema = z.object({
   body: z.object({
-    body: z.object({
-      fullName: z.string().optional(),
-      emergencyContact: z.string().optional(),
-      address: z.string().optional(),
-    }),
+    fullName: z.string().optional(),
+    emergencyContact: z.string().optional(),
+    address: z.string().optional(),
   }),
 });
 

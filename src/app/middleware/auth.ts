@@ -1,4 +1,3 @@
-import { USER_ROLE } from '../module/User/user.constant';
 import CatchAsync from '../utils/catchAsync';
 import { NextFunction, Request, Response } from 'express';
 import httpStatus from 'http-status';
@@ -7,8 +6,9 @@ import { jwtHelpers } from '../utils/JWTHelpers';
 import { config } from '../config';
 import AppError from '../Error/AppError';
 import { User } from '../module/User/user.model';
+import { UserRole } from '../module/User/user.constant';
 
-const auth = (...requiredRoles: (keyof typeof USER_ROLE)[]) => {
+const auth = (...requiredRoles: (keyof typeof UserRole)[]) => {
   return CatchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const token = req.headers.authorization;
 
@@ -22,7 +22,7 @@ const auth = (...requiredRoles: (keyof typeof USER_ROLE)[]) => {
 
     const { role, id, iat } = decoded;
 
-    const user = await User.findOne({ id });
+    const user = await User.findOne({ _id: id });
 
     if (!user) {
       throw new AppError(404, 'User not found');

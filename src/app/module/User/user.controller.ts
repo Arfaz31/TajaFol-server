@@ -7,6 +7,7 @@ import { TImageFiles } from '../../interface/image.interface';
 
 const register = catchAsync(async (req, res) => {
   const { password, customers } = req.body;
+
   const result = await UserServices.registerUser(password, customers);
   if (result) {
     const { refreshToken } = result;

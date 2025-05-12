@@ -37,7 +37,7 @@ const userSchema = new Schema<IUser, UserModel>(
     },
     role: {
       type: String,
-      enum: ['CUSTOMER', 'ADMIN'],
+      enum: ['CUSTOMER', 'ADMIN', 'SUPER_ADMIN'],
       Required: true,
     },
     status: {

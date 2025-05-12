@@ -33,7 +33,7 @@ router.get(
 );
 
 router.patch(
-  '/update-profile',
+  '/update-my-profile',
   auth(...Object.values(UserRole)),
   uploadSingleImage,
   validateFileRequest(UploadedFilesArrayZodSchema),
