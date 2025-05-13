@@ -25,8 +25,7 @@ const forgetPasswordValidationSchema = z.object({
 
 const resetPasswordValidationSchema = z.object({
   body: z.object({
-    email: z.string().email('Invalid email address'),
-    newPassword: z.string({
+    password: z.string({
       required_error: 'User password is required!',
     }),
   }),

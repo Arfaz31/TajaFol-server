@@ -27,7 +27,11 @@ export const config = {
   jwt_refresh_secret: process.env.JWT_REFRESH_SECRET,
   jwt_access_expire_in: process.env.JWT_ACCESS_EXPIRES_IN,
   jwt_refresh_expire_in: process.env.JWT_REFRESH_EXPIRES_IN,
-  reset_pass_secret: process.env.RESET_PASS_TOKEN,
-  reset_pass_expire_in: process.env.RESET_PASS_EXPIRES_IN,
-  reset_pass_link: process.env.RESET_PASS_LINK,
+
+  reset_pass_secret: process.env.RESET_PASSWORD_SECRET,
+  reset_pass_expire_in: process.env.RESET_PASSWORD_EXPIRES_IN,
+  reset_pass_url: process.env.RESET_PASSWORD_URL,
+
+  user_mailer: process.env.MAIL_USER,
+  mailer_pass: process.env.MAIL_PASS,
 };

@@ -28,16 +28,16 @@ router.post(
   AuthController.generateAccessTokeViaRefreshToken,
 );
 
-// router.post(
-//   '/forget-password',
-//   validateRequest(AuthValidation.forgetPasswordValidationSchema),
-//   AuthController.forgetPassword,
-// );
+router.post(
+  '/forget-password',
+  validateRequest(AuthValidation.forgetPasswordValidationSchema),
+  AuthController.forgetPassword,
+);
 
-// router.post(
-//   '/reset-password',
-//   validateRequest(AuthValidation.resetPasswordValidationSchema),
-//   AuthController.resetPassword,
-// );
+router.post(
+  '/reset-password',
+  validateRequest(AuthValidation.resetPasswordValidationSchema),
+  AuthController.resetPassword,
+);
 
 export const AuthRoutes = router;

@@ -6,6 +6,7 @@ import bcrypt from 'bcryptjs';
 import { jwtHelpers } from '../../utils/JWTHelpers';
 import { config } from '../../config';
 import { JwtPayload, Secret } from 'jsonwebtoken';
+import emailSender from './emailSender';
 // import { v4 as uuidv4 } from 'uuid';
 // import { IUser } from '../User/user.interface';
 
@@ -160,8 +161,92 @@ const refreshToken = async (token: string) => {
   };
 };
 
+const forgetPassword = async (email: string) => {
+  const user = await User.findOne({ email: email }).select('email contact');
+
+  if (!user) {
+    throw new AppError(httpStatus.NOT_FOUND, 'User not found');
+  }
+
+  const token = jwtHelpers.generateToken(
+    { email: user.email },
+    config.reset_pass_secret as string,
+    config.reset_pass_expire_in as string,
+  );
+
+  const resetLink =
+    config.reset_pass_url + `?email=${user.email}&token=${token}`;
+
+  const emailHTML = `
+    <!DOCTYPE html>
+    <html>
+    <body style="font-family: Arial, sans-serif; background-color: #f9f9f9; margin: 0; padding: 0;">
+      <div style="max-width: 600px; margin: 40px auto; background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);">
+        <div style="text-align: center; background-color: #4caf50; padding: 15px 0; border-radius: 10px 10px 0 0; color: white;">
+          <h1 style="margin: 0; font-size: 26px;">TazaaFol Password Reset</h1>
+        </div>
+        <div style="padding: 25px; text-align: center; color: #333;">
+          <h2 style="font-size: 22px;">Hello!</h2>
+          <p style="font-size: 16px; margin: 20px 0;">We received a request to reset your TazaaFol account password. Click the button below to reset it.</p>
+          <a href="${resetLink}" style="display: inline-block; text-decoration: none; background-color: #4caf50; color: white; padding: 12px 25px; border-radius: 6px; font-size: 16px; margin-top: 20px;">Reset Password</a>
+        </div>
+        <div style="text-align: center; margin-top: 25px; font-size: 13px; color: #888;">
+          <p>If you didn’t request a password reset, you can ignore this email.</p>
+          <p>&copy; ${new Date().getFullYear()} TazaaFol Fruits. All rights reserved.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  await emailSender(user.email, emailHTML);
+};
+
+const resetPassword = async (token: string, password: string) => {
+  const decodedToken = jwtHelpers.verifyToken(
+    token,
+    config.reset_pass_secret as string,
+  ) as JwtPayload;
+
+  if (!decodedToken) {
+    throw new AppError(httpStatus.UNAUTHORIZED, 'Invalid token');
+  }
+
+  const user = await User.findOne({ email: decodedToken.email }).select(
+    '+password',
+  );
+
+  if (!user) {
+    throw new AppError(httpStatus.NOT_FOUND, 'User not found');
+  }
+
+  // console.log('password', password);
+
+  const newHashedPassword = await bcrypt.hash(
+    password,
+    Number(config.bcrypt_salt_rounds),
+  );
+
+  await User.findOneAndUpdate(
+    {
+      email: user.email,
+      isDeleted: false,
+    },
+    {
+      password: newHashedPassword,
+      passwordChangedAt: new Date(),
+    },
+  );
+
+  return {
+    message: 'Password reset successfully',
+  };
+};
+
 export const AuthService = {
   login,
   changePassword,
   refreshToken,
+  forgetPassword,
+  resetPassword,
 };
