@@ -26,9 +26,9 @@ const ProductSchema = new Schema<IProduct>(
       trim: true,
       minlength: [100, 'Broad description should be at least 100 characters'],
     },
-    subcategory: {
+    category: {
       type: Schema.Types.ObjectId,
-      ref: 'Subcategory',
+      ref: 'Category',
       required: true,
     },
     price: {

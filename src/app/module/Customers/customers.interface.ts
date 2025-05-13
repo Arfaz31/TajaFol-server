@@ -5,8 +5,8 @@ export interface ICustomer {
   user: Types.ObjectId;
   email: string;
   contact: string;
-  emergencyContact: string;
+  emergencyContact?: string;
   profileImage?: string;
-  address: string;
+  address?: string;
   isDeleted: boolean;
 }

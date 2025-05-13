@@ -26,7 +26,6 @@ const adminSchema = new Schema<IAdmin>(
 
     emergencyContact: {
       type: String,
-      required: true,
     },
 
     profileImage: {
@@ -34,7 +33,6 @@ const adminSchema = new Schema<IAdmin>(
     },
     address: {
       type: String,
-      required: true,
     },
     isDeleted: {
       type: Boolean,

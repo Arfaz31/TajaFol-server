@@ -11,7 +11,16 @@ import { UploadedFilesArrayZodSchema } from '../../utils/uploadedFileValidationS
 
 const router = Router();
 
-router.get('/customers', auth(UserRole.ADMIN), UserController.getAllCustomers);
+router.get(
+  '/customers',
+  auth(...Object.values(UserRole)),
+  UserController.getAllCustomers,
+);
+router.get(
+  '/admins',
+  auth(...Object.values(UserRole)),
+  UserController.getAllAdmin,
+);
 
 router.post(
   '/register',
@@ -26,11 +35,7 @@ router.post(
   UserController.createAdminIntoDB,
 );
 
-router.get(
-  '/me',
-  auth(UserRole.ADMIN, UserRole.CUSTOMER),
-  UserController.getMeFromDB,
-);
+router.get('/me', auth(...Object.values(UserRole)), UserController.getMeFromDB);
 
 router.patch(
   '/update-my-profile',
@@ -42,6 +47,10 @@ router.patch(
   UserController.updateUserProfile,
 );
 
-router.delete('/:id', auth(UserRole.ADMIN), UserController.deleteUser);
+router.delete(
+  '/:id',
+  auth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  UserController.deleteUser,
+);
 
 export const UserRoutes = router;

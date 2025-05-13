@@ -12,11 +12,15 @@ import { validateRequest } from '../../middleware/validateRequest';
 
 const router = Router();
 
-router.get('/', SubcategoryController.getAllSubcategory);
+router.get(
+  '/',
+  auth(...Object.values(UserRole)),
+  SubcategoryController.getAllSubcategory,
+);
 
 router.post(
   '/create-subcategory',
-  auth(UserRole.ADMIN),
+  auth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
   uploadSingleImage,
   validateFileRequest(UploadedFilesArrayZodSchema),
   parseBodyForFormData,
@@ -26,7 +30,7 @@ router.post(
 
 router.patch(
   '/update/:id',
-  auth(UserRole.ADMIN),
+  auth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
   uploadSingleImage,
   validateFileRequest(UploadedFilesArrayZodSchema),
   parseBodyForFormData,
@@ -36,7 +40,7 @@ router.patch(
 
 router.delete(
   '/:id',
-  auth(UserRole.ADMIN),
+  auth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
   SubcategoryController.deleteSubcategory,
 );
 

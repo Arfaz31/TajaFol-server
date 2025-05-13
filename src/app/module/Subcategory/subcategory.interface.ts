@@ -8,6 +8,5 @@ export interface ISubcategory {
   slug: string;
   image: string;
   status: TStatus;
-  metaTags?: string[];
   isDeleted: boolean;
 }

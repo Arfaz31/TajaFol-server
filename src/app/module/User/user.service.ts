@@ -17,11 +17,18 @@ import { jwtHelpers } from '../../utils/JWTHelpers';
 import QueryBuilder from '../../Builder/QueryBuilder';
 import { JwtPayload } from 'jsonwebtoken';
 import { TImageFile } from '../../interface/image.interface';
+import { SuperAdmin } from '../SuperAdmin/superAdmin.model';
 
 const generateUserId = (name: string): string => {
   const cleanName = name.trim().split(' ').join('').toLowerCase();
   const shortUuid = uuidv4().slice(0, 6); // keep it short & readable
   return `${cleanName}-${shortUuid}`;
+};
+
+const roleModelMap: any = {
+  [UserRole.CUSTOMER]: Customers,
+  [UserRole.ADMIN]: Admin,
+  [UserRole.SUPER_ADMIN]: SuperAdmin,
 };
 
 //REGISTER
@@ -145,6 +152,19 @@ const createAdmin = async (password: string, payload: IAdmin) => {
   }
 };
 
+const getAllAdminFromDB = async (query: Record<string, unknown>) => {
+  const adminQuery = new QueryBuilder(Admin.find().populate('user'), query)
+    .search(customerSearchableFields)
+    .filter()
+    .sort()
+    .paginate()
+    .fields();
+
+  const result = await adminQuery.modelQuery;
+  const meta = await adminQuery.countTotal();
+  return { result, meta };
+};
+
 //get all user
 const getAllCustomersFromDB = async (query: Record<string, unknown>) => {
   const customerQuery = new QueryBuilder(
@@ -174,6 +194,11 @@ const getMe = async (id: string) => {
       'user',
     );
     return getProfile;
+  } else if (isUserExist.role === UserRole.SUPER_ADMIN) {
+    const getProfile = await SuperAdmin.findOne({
+      user: isUserExist._id,
+    }).populate('user');
+    return getProfile;
   } else if (isUserExist.role === UserRole.CUSTOMER) {
     const getProfile = await Customers.findOne({
       user: isUserExist._id,
@@ -183,17 +208,22 @@ const getMe = async (id: string) => {
 };
 
 const updateUserProfileData = async (
-  user: JwtPayload, // Logged-in user
+  user: JwtPayload,
   data: Partial<IUser>,
   profileImg?: TImageFile,
 ) => {
   const profileImagePath = (profileImg && profileImg.path) || '';
+  const modelToUpdate = roleModelMap[user.role as any];
 
-  const result = await User.findOneAndUpdate(
-    { _id: user.id },
-    { ...data, profileImg: profileImagePath },
+  const result = await modelToUpdate.findOneAndUpdate(
+    { user: user.id },
+    {
+      ...data,
+      ...(profileImagePath && { profileImage: profileImagePath }),
+    },
     { new: true },
   );
+
   return result;
 };
 
@@ -245,6 +275,7 @@ const deleteUser = async (id: string) => {
 export const UserServices = {
   registerUser,
   createAdmin,
+  getAllAdminFromDB,
   getAllCustomersFromDB,
   getMe,
   updateUserProfileData,

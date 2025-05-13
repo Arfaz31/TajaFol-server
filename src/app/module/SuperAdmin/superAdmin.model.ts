@@ -1,7 +1,8 @@
 import { model, Schema } from 'mongoose';
-import { ICustomer } from './customers.interface';
 
-const customerSchema = new Schema<ICustomer>(
+import { ISuperAdmin } from './superAdmin.interface';
+
+const superAdminSchema = new Schema<ISuperAdmin>(
   {
     fullName: {
       type: String,
@@ -44,4 +45,4 @@ const customerSchema = new Schema<ICustomer>(
   },
 );
 
-export const Customers = model<ICustomer>('Customer', customerSchema);
+export const SuperAdmin = model<ISuperAdmin>('SuperAdmin', superAdminSchema);

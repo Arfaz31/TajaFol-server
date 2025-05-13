@@ -14,13 +14,13 @@ const router = Router();
 
 router.get(
   '/all-category',
-  auth(UserRole.CUSTOMER, UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  auth(...Object.values(UserRole)),
   CategoryController.getAllCategory,
 );
 
 router.post(
   '/create-category',
-  auth(UserRole.ADMIN),
+  auth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
   uploadSingleImage,
   validateFileRequest(UploadedFilesArrayZodSchema),
   parseBodyForFormData,
@@ -36,7 +36,7 @@ router.get(
 
 router.patch(
   '/:id',
-  auth(UserRole.ADMIN),
+  auth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
   uploadSingleImage,
   validateFileRequest(UploadedFilesArrayZodSchema),
   parseBodyForFormData,
@@ -44,6 +44,10 @@ router.patch(
   CategoryController.updateCategoryIntoDB,
 );
 
-router.delete('/:id', auth(UserRole.ADMIN), CategoryController.deleteCategory);
+router.delete(
+  '/:id',
+  auth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  CategoryController.deleteCategory,
+);
 
 export const CategoryRoutes = router;

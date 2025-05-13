@@ -37,11 +37,6 @@ const subcategorySchema = new Schema<ISubcategory>(
       type: Boolean,
       default: false,
     },
-    metaTags: [
-      {
-        type: String,
-      },
-    ],
   },
   { timestamps: true },
 );

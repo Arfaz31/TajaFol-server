@@ -1,4 +1,3 @@
-import { Types } from 'mongoose';
 import { TStatus } from '../User/user.constant';
 
 export interface ICategory {
@@ -7,7 +6,7 @@ export interface ICategory {
   slug: string;
   image: string;
   status: TStatus;
-  metaTags?: string[];
+
   isDeleted: boolean;
-  subCategory: Types.ObjectId[];
+  // subCategory: Types.ObjectId[];
 }

@@ -33,17 +33,17 @@ const CategorySchema = new Schema<ICategory>(
       type: Boolean,
       default: false,
     },
-    subCategory: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: 'Subcategory',
-      },
-    ],
-    metaTags: [
-      {
-        type: String,
-      },
-    ],
+    // subCategory: [
+    //   {
+    //     type: Schema.Types.ObjectId,
+    //     ref: 'Subcategory',
+    //   },
+    // ],
+    // metaTags: [
+    //   {
+    //     type: String,
+    //   },
+    // ],
   },
   { timestamps: true },
 );

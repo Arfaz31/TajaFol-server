@@ -35,6 +35,15 @@ const createAdminIntoDB = catchAsync(async (req, res) => {
     data: result,
   });
 });
+const getAllAdmin = catchAsync(async (req, res) => {
+  const result = await UserServices.getAllAdminFromDB(req.query);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'All Admin data retrieve successfully',
+    data: result,
+  });
+});
 
 const getAllCustomers = catchAsync(async (req, res) => {
   const result = await UserServices.getAllCustomersFromDB(req.query);
@@ -90,6 +99,7 @@ const deleteUser = catchAsync(async (req, res) => {
 export const UserController = {
   register,
   createAdminIntoDB,
+  getAllAdmin,
   getAllCustomers,
   getMeFromDB,
   updateUserProfile,

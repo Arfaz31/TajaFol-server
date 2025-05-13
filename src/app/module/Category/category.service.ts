@@ -22,10 +22,7 @@ const createCategory = async (payload: ICategory, image: TImageFile) => {
 };
 
 const getAllCategory = async (query: Record<string, unknown>) => {
-  const categoryQuery = new QueryBuilder(
-    Category.find().populate('subCategory'),
-    query,
-  )
+  const categoryQuery = new QueryBuilder(Category.find(), query)
     .search(searchableFields)
     .filter()
     .sort()
@@ -37,7 +34,7 @@ const getAllCategory = async (query: Record<string, unknown>) => {
 };
 
 const getCategoryById = async (id: string) => {
-  const result = await Category.findById(id).populate('subCategory');
+  const result = await Category.findById(id);
   return result;
 };
 

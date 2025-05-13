@@ -11,15 +11,27 @@ import { parseBodyForFormData } from '../../middleware/ParseBodyForFormData';
 
 const router = express.Router();
 
-router.get('/', ProductController.getAllProducts);
+router.get(
+  '/',
+  auth(...Object.values(UserRole)),
+  ProductController.getAllProducts,
+);
 
-router.get('/single/:id', ProductController.getSingleProduct);
+router.get(
+  '/single/:id',
+  auth(...Object.values(UserRole)),
+  ProductController.getSingleProduct,
+);
 
-router.get('/new-arrivals', ProductController.getNewArrivals);
+router.get(
+  '/new-arrivals',
+  auth(...Object.values(UserRole)),
+  ProductController.getNewArrivals,
+);
 
 router.post(
   '/create-product',
-  auth(UserRole.ADMIN),
+  auth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
   uploadMultipleImages([{ name: 'Product-Images', maxCount: 10 }]),
   validateFileRequest(UploadedFilesArrayZodSchema),
   parseBodyForFormData,
@@ -29,7 +41,7 @@ router.post(
 
 router.patch(
   '/update/:id',
-  auth(UserRole.ADMIN),
+  auth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
   uploadMultipleImages([{ name: 'Product-Images', maxCount: 10 }]),
   validateFileRequest(UploadedFilesArrayZodSchema),
   parseBodyForFormData,
@@ -39,7 +51,7 @@ router.patch(
 
 router.delete(
   '/delete/:id',
-  auth(UserRole.ADMIN),
+  auth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
   ProductController.deleteProduct,
 );
 

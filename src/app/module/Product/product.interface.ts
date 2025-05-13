@@ -5,7 +5,7 @@ export interface IProduct {
   sku: string;
   shortdescription: string;
   broaddescription: string;
-  subcategory: Types.ObjectId;
+  category: Types.ObjectId;
   price: number;
   quantity: number;
   discountPrice?: number;

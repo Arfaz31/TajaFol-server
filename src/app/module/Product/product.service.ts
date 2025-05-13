@@ -3,7 +3,7 @@
 import { Product } from './product.model';
 import httpStatus from 'http-status';
 import { Category } from '../Category/category.model';
-import { Subcategory } from '../Subcategory/subcategory.model';
+
 import AppError from '../../Error/AppError';
 import { IProduct } from './product.interface';
 import QueryBuilder from '../../Builder/QueryBuilder';
@@ -32,15 +32,11 @@ const createProductIntoDB = async (
   }
 
   // Validate subcategory exists
-  if (payload.subcategory) {
-    const checkSubCategoryExists = await Subcategory.findById(
-      payload.subcategory,
-    );
-    if (!checkSubCategoryExists) {
-      throw new AppError(httpStatus.NOT_FOUND, 'Subcategory does not exist');
+  if (payload.category) {
+    const checkCategoryExists = await Category.findById(payload.category);
+    if (!checkCategoryExists) {
+      throw new AppError(httpStatus.NOT_FOUND, 'category does not exist');
     }
-  } else {
-    throw new AppError(httpStatus.BAD_REQUEST, 'Subcategory is required');
   }
 
   // Create product
@@ -52,18 +48,10 @@ const getAllProducts = async (query: Record<string, unknown>) => {
   const searchableFields = ['productName', 'description'];
 
   // Step 1: Handle category/subcategory
-  const [category, subcategory] = await Promise.all([
+  const [category] = await Promise.all([
     query?.category
       ? Category.findOne({
           categoryName: { $regex: query.category as string, $options: 'i' },
-        }).select('_id')
-      : null,
-    query?.subcategory
-      ? Subcategory.findOne({
-          subcategoryName: {
-            $regex: query.subcategory as string,
-            $options: 'i',
-          },
         }).select('_id')
       : null,
   ]);
@@ -71,7 +59,6 @@ const getAllProducts = async (query: Record<string, unknown>) => {
   // Step 2: Build the base query with filters
   const baseQuery = {
     ...(category && { category: category._id }),
-    ...(subcategory && { subcategory: subcategory._id }),
   };
 
   // Step 3: Build the search query
@@ -112,11 +99,7 @@ const getAllProducts = async (query: Record<string, unknown>) => {
   // Step 6: Use QueryBuilder with population
   const productQuery = new QueryBuilder(
     Product.find(finalQuery).populate({
-      path: 'subcategory',
-      populate: {
-        path: 'category',
-        model: 'Category',
-      },
+      path: 'category',
     }),
     query,
   );
@@ -138,11 +121,7 @@ const getAllProducts = async (query: Record<string, unknown>) => {
 
 const getSingleProduct = async (id: string) => {
   const result = await Product.findById(id).populate({
-    path: 'subcategory',
-    populate: {
-      path: 'category',
-      model: 'Category',
-    },
+    path: 'category',
   });
 
   return result;
@@ -169,15 +148,10 @@ const updateProduct = async (
   }
 
   // Validate subcategory exists if updating it
-  if (
-    payload.subcategory &&
-    payload.subcategory !== isExist.subcategory.toString()
-  ) {
-    const checkSubCategoryExists = await Subcategory.findById(
-      payload.subcategory,
-    );
-    if (!checkSubCategoryExists) {
-      throw new AppError(httpStatus.NOT_FOUND, 'Subcategory does not exist');
+  if (payload.category && payload.category !== isExist.category.toString()) {
+    const checkCategoryExists = await Category.findById(payload.category);
+    if (!checkCategoryExists) {
+      throw new AppError(httpStatus.NOT_FOUND, 'category does not exist');
     }
   }
 
@@ -227,11 +201,7 @@ const getNewArrivals = async () => {
   })
 
     .populate({
-      path: 'subcategory',
-      populate: {
-        path: 'category',
-        model: 'Category',
-      },
+      path: 'checkCategoryExists',
     })
     .sort({ createdAt: -1 })
     .limit(10);

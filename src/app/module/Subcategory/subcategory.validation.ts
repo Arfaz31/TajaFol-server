@@ -13,12 +13,7 @@ const SubCategoryValidationSchema = z.object({
     slug: z
       .string()
       .min(2, 'Slug must be at least 2 characters')
-      .max(100, 'Slug cannot exceed 100 characters')
-      .regex(
-        /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
-        'Slug must contain only lowercase letters, numbers, and hyphens',
-      ),
-    metaTags: z.array(z.string()).optional(),
+      .max(100, 'Slug cannot exceed 100 characters'),
   }),
 });
 
@@ -27,7 +22,6 @@ const UpdateSubcategoryValidationSchema = z.object({
     categoryName: z.string().optional(),
     description: z.string().optional(),
     slug: z.string().optional(),
-    metaTags: z.array(z.string()).optional(),
   }),
 });
 

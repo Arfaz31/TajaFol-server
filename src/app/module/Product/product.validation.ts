@@ -20,7 +20,7 @@ const productSchemaValidation = z.object({
       .string()
       .min(100, 'Broad description should be at least 100 characters')
       .trim(),
-    subcategory: z.string().min(1, 'Subcategory is required'),
+    category: z.string().min(1, 'Category is required'),
     price: z.number().min(0, 'Price cannot be negative'),
     quantity: z
       .number()
