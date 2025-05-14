@@ -27,13 +27,11 @@ const productSchemaValidation = z.object({
       .int('Quantity must be an integer')
       .min(0, 'Quantity cannot be negative')
       .default(0),
+    unit: z.number().min(1, 'Unit is required'),
     discountPrice: z
       .number()
       .min(0, 'Discount price cannot be negative')
       .optional(),
-    images: z
-      .array(z.string().url('Each image URL must be valid'))
-      .nonempty('At least one product image is required'),
     isActive: z.boolean().default(true),
     isNewArrival: z.boolean().default(false),
     isTrending: z.boolean().default(false),
@@ -71,7 +69,6 @@ const updateProductSchemaValidation = z.object({
       .number()
       .min(0, 'Discount price cannot be negative')
       .optional(),
-    images: z.array(z.string().url('Each image URL must be valid')).optional(),
     isActive: z.boolean().optional(),
     isNewArrival: z.boolean().optional(),
     isTrending: z.boolean().optional(),

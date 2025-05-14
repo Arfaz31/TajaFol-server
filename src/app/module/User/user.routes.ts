@@ -1,6 +1,10 @@
 import { Router } from 'express';
 import { UserController } from './user.controller';
-import { UpdateUserValidationSchema, UserValidation } from './user.validation';
+import {
+  adminSchemaValidation,
+  UpdateUserValidationSchema,
+  UserValidation,
+} from './user.validation';
 import auth from '../../middleware/auth';
 import { UserRole } from './user.constant';
 import { validateRequest } from '../../middleware/validateRequest';
@@ -31,7 +35,7 @@ router.post(
 router.post(
   '/create-admin',
   auth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
-  // validateData(AdminValidation.adminSchemaValidation),
+  validateRequest(adminSchemaValidation),
   UserController.createAdminIntoDB,
 );
 

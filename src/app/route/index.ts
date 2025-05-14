@@ -4,6 +4,7 @@ import { UserRoutes } from '../module/User/user.routes';
 import { CategoryRoutes } from '../module/Category/category.routes';
 import { SubcategoryRoutes } from '../module/Subcategory/subcategory.routes';
 import { FeedbackRoutes } from '../module/Feedback/feedback.route';
+import { ProductRoutes } from '../module/Product/product.routes';
 
 const middleWareRouter = Router();
 
@@ -27,6 +28,10 @@ const moduleRoutes = [
   {
     path: '/feedback',
     route: FeedbackRoutes,
+  },
+  {
+    path: '/product',
+    route: ProductRoutes,
   },
 ];
 

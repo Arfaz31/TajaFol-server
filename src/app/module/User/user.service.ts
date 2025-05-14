@@ -153,7 +153,10 @@ const createAdmin = async (password: string, payload: IAdmin) => {
 };
 
 const getAllAdminFromDB = async (query: Record<string, unknown>) => {
-  const adminQuery = new QueryBuilder(Admin.find().populate('user'), query)
+  const adminQuery = new QueryBuilder(
+    Admin.find({ isDeleted: false }).populate('user'),
+    query,
+  )
     .search(customerSearchableFields)
     .filter()
     .sort()

@@ -42,6 +42,10 @@ const ProductSchema = new Schema<IProduct>(
       min: [0, 'Quantity cannot be negative'],
       default: 0,
     },
+    unit: {
+      type: Number,
+      required: [true, 'Unit is required'],
+    },
     discountPrice: {
       type: Number,
       min: [0, 'Discount price cannot be negative'],

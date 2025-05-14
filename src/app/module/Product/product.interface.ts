@@ -8,6 +8,7 @@ export interface IProduct {
   category: Types.ObjectId;
   price: number;
   quantity: number;
+  unit: number;
   discountPrice?: number;
   images: string[];
   isActive: boolean;

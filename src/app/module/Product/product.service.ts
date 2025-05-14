@@ -47,24 +47,38 @@ const createProductIntoDB = async (
 const getAllProducts = async (query: Record<string, unknown>) => {
   const searchableFields = ['productName', 'description'];
 
-  // Step 1: Handle category/subcategory
-  const [category] = await Promise.all([
-    query?.category
-      ? Category.findOne({
-          categoryName: { $regex: query.category as string, $options: 'i' },
-        }).select('_id')
-      : null,
-  ]);
+  // Step 1: Handle category - only try to find a category if a valid ID is provided
+  let categoryId = null;
+  if (
+    query?.category &&
+    typeof query.category === 'string' &&
+    query.category.trim() !== ''
+  ) {
+    const category = await Category.findOne({
+      _id: query.category,
+    }).select('_id');
+
+    if (category) {
+      categoryId = category._id;
+    }
+  }
 
   // Step 2: Build the base query with filters
-  const baseQuery = {
-    ...(category && { category: category._id }),
-  };
+  const baseQuery: Record<string, any> = {};
+
+  // Only add category filter if we found a valid category
+  if (categoryId) {
+    baseQuery.category = categoryId;
+  }
 
   // Step 3: Build the search query
   let searchQuery = {};
-  if (query?.searchTerm) {
-    const searchTerm = query.searchTerm as string;
+  if (
+    query?.searchTerm &&
+    typeof query.searchTerm === 'string' &&
+    query.searchTerm.trim() !== ''
+  ) {
+    const searchTerm = query.searchTerm;
     searchQuery = {
       $or: [
         ...searchableFields.map((field) => ({
@@ -84,10 +98,12 @@ const getAllProducts = async (query: Record<string, unknown>) => {
   // Step 4: Handle price range filter
   if (query?.price && typeof query.price === 'string') {
     const [minPrice, maxPrice] = query.price.split('-').map(Number);
-    searchQuery = {
-      ...searchQuery,
-      price: { $gte: minPrice, $lte: maxPrice },
-    };
+    if (!isNaN(minPrice) && !isNaN(maxPrice)) {
+      searchQuery = {
+        ...searchQuery,
+        price: { $gte: minPrice, $lte: maxPrice },
+      };
+    }
   }
 
   // Step 5: Combine queries
@@ -137,42 +153,49 @@ const updateProduct = async (
   }
 
   // Check if product exists
-  const isExist = await Product.findById(id);
-  if (!isExist) {
+  const existingProduct = await Product.findById(id);
+  if (!existingProduct) {
     throw new AppError(httpStatus.NOT_FOUND, 'Product does not exist');
   }
 
-  // Process images if provided
-  if (files && files['Product-Images'] && files['Product-Images'].length > 0) {
-    payload.images = files['Product-Images'].map((file) => file.path);
+  // Process images
+  const newImages = files?.['Product-Images'] ?? [];
+
+  if (newImages.length > 0) {
+    // If new images are provided, merge them with existing images
+    payload.images = [
+      ...(existingProduct.images ?? []),
+      ...newImages.map((file) => file.path),
+    ];
+  } else {
+    // No new images: retain existing images
+    payload.images = existingProduct.images ?? [];
   }
 
-  // Validate subcategory exists if updating it
-  if (payload.category && payload.category !== isExist.category.toString()) {
-    const checkCategoryExists = await Category.findById(payload.category);
-    if (!checkCategoryExists) {
-      throw new AppError(httpStatus.NOT_FOUND, 'category does not exist');
+  // Validate category if it's being updated
+  if (
+    payload.category &&
+    payload.category !== existingProduct.category.toString()
+  ) {
+    const categoryExists = await Category.findById(payload.category);
+    if (!categoryExists) {
+      throw new AppError(httpStatus.NOT_FOUND, 'Category does not exist');
     }
   }
 
-  // Filter out undefined, null, or empty string values
-  // const filteredPayload = Object.entries(payload).reduce(
-  //   (acc, [key, value]) => {
-  //     if (value !== undefined && value !== null && value !== '' && key !== 'id') {
-  //       acc[key] = value;
-  //     }
-  //     return acc;
-  //   },
-  //   {} as Record<string, any>
-  // );
+  // If no actual update payload, return current product
+  const updateKeys = Object.keys(payload);
+  if (updateKeys.length === 0) {
+    return existingProduct;
+  }
 
-  // Update product
-  const result = await Product.findByIdAndUpdate(id, payload, {
+  // Perform update
+  const updatedProduct = await Product.findByIdAndUpdate(id, payload, {
     new: true,
     runValidators: true,
   });
 
-  return result;
+  return updatedProduct;
 };
 
 const deleteProduct = async (id: string) => {
