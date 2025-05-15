@@ -143,6 +143,22 @@ const getSingleProduct = async (id: string) => {
   return result;
 };
 
+const getCategoryRelatedProductsFromDB = async (excludeProductId: string) => {
+  const product = await Product.findById(excludeProductId);
+
+  if (!product) {
+    throw new Error('product not found');
+  }
+
+  const relatedProducts = await Product.find({
+    category: product.category,
+    _id: { $ne: excludeProductId },
+  }).populate('category');
+  // Find all products with the same category ID, except for the product with this specific ID.
+
+  return relatedProducts;
+};
+
 const updateProduct = async (
   id: string,
   payload: Record<string, any>,
@@ -236,6 +252,7 @@ export const ProductService = {
   createProductIntoDB,
   getAllProducts,
   getSingleProduct,
+  getCategoryRelatedProductsFromDB,
   updateProduct,
   deleteProduct,
   getNewArrivals,

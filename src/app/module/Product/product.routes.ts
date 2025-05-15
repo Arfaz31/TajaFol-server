@@ -13,14 +13,20 @@ const router = express.Router();
 
 router.get(
   '/',
-  auth(...Object.values(UserRole)),
+  // auth(...Object.values(UserRole)),
   ProductController.getAllProducts,
 );
 
 router.get(
   '/single/:id',
-  auth(...Object.values(UserRole)),
+  // auth(...Object.values(UserRole)),
   ProductController.getSingleProduct,
+);
+
+router.get(
+  '/:id/related',
+  // auth(...Object.values(UserRole)),
+  ProductController.getCategoryRelatedProducts,
 );
 
 router.get(

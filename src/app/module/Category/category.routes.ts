@@ -14,7 +14,7 @@ const router = Router();
 
 router.get(
   '/all-category',
-  auth(...Object.values(UserRole)),
+  // auth(...Object.values(UserRole)),
   CategoryController.getAllCategory,
 );
 

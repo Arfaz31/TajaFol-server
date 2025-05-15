@@ -35,6 +35,21 @@ const getSingleProduct = catchAsync(async (req, res) => {
   });
 });
 
+const getCategoryRelatedProducts = catchAsync(async (req, res) => {
+  const { id } = req.params;
+
+  const relatedProducts =
+    await ProductService.getCategoryRelatedProductsFromDB(id);
+  // the id (which is the ID of the product itself).
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Related products retrieved successfully',
+    data: relatedProducts,
+  });
+});
+
 const updateProductIntoDB = catchAsync(async (req, res) => {
   const files = req.files as { [key: string]: Express.Multer.File[] };
   const result = await ProductService.updateProduct(
@@ -75,6 +90,7 @@ export const ProductController = {
   createProduct,
   getAllProducts,
   getSingleProduct,
+  getCategoryRelatedProducts,
   updateProductIntoDB,
   deleteProduct,
   getNewArrivals,
