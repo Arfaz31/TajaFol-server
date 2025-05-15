@@ -5,6 +5,7 @@ import { CategoryRoutes } from '../module/Category/category.routes';
 import { SubcategoryRoutes } from '../module/Subcategory/subcategory.routes';
 import { FeedbackRoutes } from '../module/Feedback/feedback.route';
 import { ProductRoutes } from '../module/Product/product.routes';
+import { OrderRoutes } from '../module/Order/order.routes';
 
 const middleWareRouter = Router();
 
@@ -32,6 +33,10 @@ const moduleRoutes = [
   {
     path: '/product',
     route: ProductRoutes,
+  },
+  {
+    path: '/order',
+    route: OrderRoutes,
   },
 ];
 
