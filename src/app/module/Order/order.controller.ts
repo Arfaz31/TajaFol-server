@@ -5,11 +5,6 @@ import { OrderService } from './order.service';
 import { sendResponse } from '../../utils/sendResponse';
 
 const createOrder = catchAsync(async (req, res) => {
-  // If user is logged in, get userId from req.user
-  if (req.user) {
-    req.body.userId = req.user._id;
-  }
-
   const result = await OrderService.createOrderIntoDB(req.body);
 
   sendResponse(res, {
@@ -45,7 +40,7 @@ const getSingleOrder = catchAsync(async (req, res) => {
 
 const getMyOrders = catchAsync(async (req, res) => {
   // Get userId from the authenticated user
-  const userId = req.user._id;
+  const userId = req.user.id;
 
   const result = await OrderService.getMyOrders(userId);
 

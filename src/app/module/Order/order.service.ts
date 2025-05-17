@@ -141,6 +141,10 @@ const getMyOrders = async (userId: string) => {
     createdAt: -1,
   });
 
+  if (!orders) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Orders not found');
+  }
+
   return orders;
 };
 

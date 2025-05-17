@@ -20,18 +20,18 @@ router.get(
   OrderController.getAllOrders,
 );
 
-// Get single order - admin and the user who placed the order
-router.get(
-  '/:id',
-  // auth(...Object.values(UserRole)),
-  OrderController.getSingleOrder,
-);
-
 // Get my orders - authenticated users only
 router.get(
   '/my-orders',
   auth(...Object.values(UserRole)),
   OrderController.getMyOrders,
+);
+
+// Get single order - admin and the user who placed the order
+router.get(
+  '/:id',
+  // auth(...Object.values(UserRole)),
+  OrderController.getSingleOrder,
 );
 
 // Update order status - admin only
