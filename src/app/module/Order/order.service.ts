@@ -100,6 +100,7 @@ const createOrderIntoDB = async (payload: IOrder): Promise<IOrder> => {
 };
 
 const getAllOrders = async (query: Record<string, unknown>) => {
+  const searchableFields = ['name', 'orderNo', 'contact', 'address'];
   const orderQuery = new QueryBuilder(
     Order.find()
       .populate('userId', 'name email')
@@ -108,8 +109,12 @@ const getAllOrders = async (query: Record<string, unknown>) => {
     query,
   );
 
-  const result = await orderQuery.filter().sort().paginate().fields()
-    .modelQuery;
+  const result = await orderQuery
+    .search(searchableFields)
+    .filter()
+    .sort()
+    .paginate()
+    .fields().modelQuery;
 
   const meta = await orderQuery.countTotal();
 
@@ -140,7 +145,7 @@ const getMyOrders = async (userId: string) => {
 };
 
 const updateOrderStatus = async (id: string, status: string) => {
-  const validStatuses = ['pending', 'shipped', 'cancelled'];
+  const validStatuses = ['pending', 'confirmed', 'shipped', 'cancelled'];
 
   if (!validStatuses.includes(status)) {
     throw new AppError(httpStatus.BAD_REQUEST, 'Invalid order status');

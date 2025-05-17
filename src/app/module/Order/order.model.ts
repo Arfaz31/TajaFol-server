@@ -92,7 +92,12 @@ const OrderSchema = new Schema<IOrder>(
     status: {
       type: String,
       enum: {
-        values: ['pending', 'shipped', 'cancelled'] as TOrderStatus[],
+        values: [
+          'pending',
+          'confirmed',
+          'shipped',
+          'cancelled',
+        ] as TOrderStatus[],
         message: '{VALUE} is not a valid order status',
       },
       default: 'pending',

@@ -8,7 +8,7 @@ export type TShippingOrder = {
   name: string; // To store product name
 };
 
-export type TOrderStatus = 'pending' | 'shipped' | 'cancelled';
+export type TOrderStatus = 'pending' | 'confirmed' | 'shipped' | 'cancelled';
 
 export interface IOrder {
   orderNo: string;
