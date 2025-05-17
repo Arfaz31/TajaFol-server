@@ -27,6 +27,10 @@ const OrderItemSchema = new Schema({
 
 const OrderSchema = new Schema<IOrder>(
   {
+    orderNo: {
+      type: String,
+      unique: true,
+    },
     userId: {
       type: Schema.Types.ObjectId,
       ref: 'User',
@@ -105,10 +109,6 @@ const OrderSchema = new Schema<IOrder>(
       type: Number,
       required: [true, 'Shipping cost is required'],
       min: [0, 'Shipping cost cannot be negative'],
-    },
-
-    transactionId: {
-      type: String,
     },
   },
   {

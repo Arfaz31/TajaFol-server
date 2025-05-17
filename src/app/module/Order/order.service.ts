@@ -10,14 +10,14 @@ import QueryBuilder from '../../Builder/QueryBuilder';
 import mongoose from 'mongoose';
 
 import { v4 as uuidv4 } from 'uuid';
-const generateMRIdFromUUID = () => {
+const generateOrderIdFromUUID = () => {
   const uuid = uuidv4();
   const digits = uuid.replace(/\D/g, '').slice(0, 4);
-  return `TNX-${digits}`;
+  return `ORD-${digits}`;
 };
 
 const createOrderIntoDB = async (payload: IOrder): Promise<IOrder> => {
-  const transactionId = generateMRIdFromUUID();
+  const orderNo = generateOrderIdFromUUID();
   const session = await mongoose.startSession();
 
   try {
@@ -25,7 +25,7 @@ const createOrderIntoDB = async (payload: IOrder): Promise<IOrder> => {
 
     // Validate and prepare order items
     const orderItems: TShippingOrder[] = [];
-    let calculatedTotalPrice = 0;
+    // let calculatedTotalPrice = 0;
 
     // Validate each product and check inventory
     for (const item of payload.orderItems) {
@@ -63,7 +63,8 @@ const createOrderIntoDB = async (payload: IOrder): Promise<IOrder> => {
       orderItems.push(orderItem);
 
       // Update calculated total price
-      calculatedTotalPrice += orderItem.price * item.quantity;
+      // calculatedTotalPrice +=
+      //   orderItem.price * item.quantity + payload.shippingCost;
 
       // Decrement product quantity
       product.quantity -= item.quantity;
@@ -71,19 +72,19 @@ const createOrderIntoDB = async (payload: IOrder): Promise<IOrder> => {
     }
 
     // Validate total price in payload matches calculated price
-    if (Math.abs(calculatedTotalPrice - payload.totalPrice) > 0.01) {
-      throw new AppError(
-        httpStatus.BAD_REQUEST,
-        `Order total price mismatch. Expected: ${calculatedTotalPrice}, Received: ${payload.totalPrice}`,
-      );
-    }
+    // if (Math.abs(calculatedTotalPrice - payload.totalPrice) > 0.01) {
+    //   throw new AppError(
+    //     httpStatus.BAD_REQUEST,
+    //     `Order total price mismatch. Expected: ${calculatedTotalPrice}, Received: ${payload.totalPrice}`,
+    //   );
+    // }
 
     // Create order with prepared items
     const orderData = {
       ...payload,
       orderItems,
-      totalPrice: calculatedTotalPrice,
-      transactionId,
+      totalPrice: payload.totalPrice,
+      orderNo,
     };
 
     const newOrder = await Order.create([orderData], { session });
@@ -100,7 +101,10 @@ const createOrderIntoDB = async (payload: IOrder): Promise<IOrder> => {
 
 const getAllOrders = async (query: Record<string, unknown>) => {
   const orderQuery = new QueryBuilder(
-    Order.find().populate('userId', 'name email').sort({ createdAt: -1 }),
+    Order.find()
+      .populate('userId', 'name email')
+      .populate('orderItems.productId')
+      .sort({ createdAt: -1 }),
     query,
   );
 
@@ -116,7 +120,9 @@ const getAllOrders = async (query: Record<string, unknown>) => {
 };
 
 const getSingleOrder = async (id: string) => {
-  const result = await Order.findById(id).populate('userId', 'name email');
+  const result = await Order.findById(id)
+    .populate('userId', 'name email')
+    .populate('orderItems.productId');
 
   if (!result) {
     throw new AppError(httpStatus.NOT_FOUND, 'Order not found');

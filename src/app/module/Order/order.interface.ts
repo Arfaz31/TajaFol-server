@@ -11,6 +11,7 @@ export type TShippingOrder = {
 export type TOrderStatus = 'pending' | 'shipped' | 'cancelled';
 
 export interface IOrder {
+  orderNo: string;
   userId?: Types.ObjectId;
   name: string;
   email?: string;
@@ -25,5 +26,4 @@ export interface IOrder {
   status: TOrderStatus;
   paymentStatus: 'paid' | 'unpaid';
   shippingCost: number;
-  transactionId: string;
 }

@@ -23,7 +23,7 @@ router.get(
 // Get single order - admin and the user who placed the order
 router.get(
   '/:id',
-  auth(...Object.values(UserRole)),
+  // auth(...Object.values(UserRole)),
   OrderController.getSingleOrder,
 );
 
