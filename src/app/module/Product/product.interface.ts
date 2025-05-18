@@ -9,6 +9,7 @@ export interface IProduct {
   price: number;
   quantity: number;
   unit: number;
+  productUnitType: string;
   discountPrice?: number;
   images: string[];
   isActive: boolean;

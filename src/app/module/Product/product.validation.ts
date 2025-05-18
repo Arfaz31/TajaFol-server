@@ -28,6 +28,7 @@ const productSchemaValidation = z.object({
       .min(0, 'Quantity cannot be negative')
       .default(0),
     unit: z.number().min(1, 'Unit is required'),
+    productUnitType: z.string().min(1, 'ProductUnitType is required'),
     discountPrice: z
       .number()
       .min(0, 'Discount price cannot be negative')
@@ -68,6 +69,11 @@ const updateProductSchemaValidation = z.object({
     discountPrice: z
       .number()
       .min(0, 'Discount price cannot be negative')
+      .optional(),
+    unit: z.number().min(1, 'Unit is required').optional(),
+    productUnitType: z
+      .string()
+      .min(1, 'ProductUnitType is required')
       .optional(),
     isActive: z.boolean().optional(),
     isNewArrival: z.boolean().optional(),
