@@ -196,10 +196,35 @@ const updateOrderStatus = async (id: string, status: string) => {
   return order;
 };
 
+const updatePaymentStatus = async (id: string, paymentStatus: string) => {
+  const validPaymentStatuses = ['paid', 'unpaid'];
+
+  if (!validPaymentStatuses.includes(paymentStatus)) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'Invalid payment status');
+  }
+
+  const order = await Order.findById(id);
+
+  if (!order) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Order not found');
+  }
+
+  // Additional validation if needed
+  if (paymentStatus === 'paid' && order.paymentStatus === 'paid') {
+    throw new AppError(httpStatus.BAD_REQUEST, 'Order is already paid');
+  }
+
+  order.paymentStatus = paymentStatus as any;
+  await order.save();
+
+  return order;
+};
+
 export const OrderService = {
   createOrderIntoDB,
   getAllOrders,
   getSingleOrder,
   getMyOrders,
   updateOrderStatus,
+  updatePaymentStatus,
 };

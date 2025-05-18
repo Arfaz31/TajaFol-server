@@ -42,4 +42,11 @@ router.patch(
   OrderController.updateOrderStatus,
 );
 
+// Update payment status - admin only
+router.patch(
+  '/:id/payment-status',
+  auth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  OrderController.updatePaymentStatus,
+);
+
 export const OrderRoutes = router;
