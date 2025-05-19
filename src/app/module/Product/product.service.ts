@@ -64,68 +64,61 @@ const getAllProducts = async (query: Record<string, unknown>) => {
   }
 
   // Step 2: Build the base query with filters
-  const baseQuery: Record<string, any> = {};
+  const finalQuery: Record<string, any> = {};
 
   // Only add category filter if we found a valid category
   if (categoryId) {
-    baseQuery.category = categoryId;
+    finalQuery.category = categoryId;
   }
 
   // Step 3: Build the search query
-  let searchQuery = {};
   if (
     query?.searchTerm &&
     typeof query.searchTerm === 'string' &&
     query.searchTerm.trim() !== ''
   ) {
     const searchTerm = query.searchTerm;
-    searchQuery = {
-      $or: [
-        ...searchableFields.map((field) => ({
-          [field]: { $regex: searchTerm, $options: 'i' },
-        })),
-        {
-          features: {
-            $elemMatch: {
-              featureName: { $regex: searchTerm, $options: 'i' },
-            },
+    finalQuery.$or = [
+      ...searchableFields.map((field) => ({
+        [field]: { $regex: searchTerm, $options: 'i' },
+      })),
+      {
+        features: {
+          $elemMatch: {
+            featureName: { $regex: searchTerm, $options: 'i' },
           },
         },
-      ],
-    };
+      },
+    ];
   }
 
   // Step 4: Handle price range filter
-  if (query?.price && typeof query.price === 'string') {
-    const [minPrice, maxPrice] = query.price.split('-').map(Number);
-    if (!isNaN(minPrice) && !isNaN(maxPrice)) {
-      searchQuery = {
-        ...searchQuery,
-        price: { $gte: minPrice, $lte: maxPrice },
-      };
+  if (query.minPrice || query.maxPrice) {
+    finalQuery.price = {};
+
+    if (query.minPrice) {
+      finalQuery.price.$gte = Number(query.minPrice);
+    }
+
+    if (query.maxPrice) {
+      finalQuery.price.$lte = Number(query.maxPrice);
     }
   }
 
-  // Step 5: Combine queries
-  const finalQuery = {
-    ...baseQuery,
-    ...(Object.keys(searchQuery).length > 0 && searchQuery),
-  };
+  const filteredQuery = { ...query };
+  delete filteredQuery.minPrice;
+  delete filteredQuery.maxPrice;
 
-  // Step 6: Use QueryBuilder with population
+  // Step 5: Use QueryBuilder with population and direct price filtering
   const productQuery = new QueryBuilder(
     Product.find(finalQuery).populate({
       path: 'category',
     }),
-    query,
+    filteredQuery,
   );
 
-  const result = await productQuery
-    .search(searchableFields)
-    .filter()
-    .sort()
-    .paginate()
-    .fields().modelQuery;
+  const result = await productQuery.filter().sort().paginate().fields()
+    .modelQuery;
 
   const meta = await productQuery.countTotal();
 

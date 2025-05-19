@@ -28,7 +28,15 @@ class QueryBuilder<T> {
   filter() {
     const queryObj = { ...this.query }; //copy query object so that the original query object is not modified
     //filtering
-    const excludeFileds = ['searchTerm', 'sort', 'limit', 'page', 'fields']; //The excluded fields (searchTerm, sort, limit, page, fields) are removed because they are not valid filters for the database query.
+    const excludeFileds = [
+      'searchTerm',
+      'sort',
+      'limit',
+      'page',
+      'fields',
+      'minPrice',
+      'maxPrice',
+    ]; //The excluded fields (searchTerm, sort, limit, page, fields) are removed because they are not valid filters for the database query.
 
     excludeFileds.forEach((el) => delete queryObj[el]);
 
