@@ -21,7 +21,7 @@ app.use(cookieParser());
 app.use('/api/v1', MiddlewareRoutes);
 
 app.get('/', (req: Request, res: Response) => {
-  res.send('Welcome to server');
+  res.send('Welcome to taazafol server');
 });
 
 app.use(
