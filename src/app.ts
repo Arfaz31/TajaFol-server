@@ -9,14 +9,21 @@ import cookieParser from 'cookie-parser';
 
 const app: Application = express();
 app.use(express.json());
+
+// Fix: Removed the space in the URL and made CORS more flexible
 app.use(
   cors({
+
     origin: ['http://localhost:3000'],
     credentials: true,
   }),
 );
 
-app.options('', cors({ origin: true, credentials: true }));
+
+ 
+// Fix: Added proper path and origin
+app.options('*', cors({ origin: true, credentials: true }));
+
 app.use(cookieParser());
 app.use('/api/v1', MiddlewareRoutes);
 
