@@ -12,9 +12,10 @@ const register = catchAsync(async (req, res) => {
   if (result) {
     const { refreshToken } = result;
     res.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'none',
+       httpOnly: true,
+    sameSite: 'none',
+    domain: 'taazafol.arviontech.online',
+    secure: true,
     });
   }
   sendResponse(res, {
