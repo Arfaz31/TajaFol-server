@@ -13,23 +13,22 @@ app.use(express.json());
 // Fix: Removed the space in the URL and made CORS more flexible
 app.use(
   cors({
-    origin: [
-      'http://localhost:3000',
-      'http://192.168.10.141:3000',
-      'https://taazafol.arviontech.online',
-      // Add more origins as needed, or use a function to validate origins dynamically
-    ],
+
+    origin: ['http://localhost:3000'],
     credentials: true,
   }),
 );
+
+
  
 // Fix: Added proper path and origin
 app.options('*', cors({ origin: true, credentials: true }));
+
 app.use(cookieParser());
 app.use('/api/v1', MiddlewareRoutes);
 
 app.get('/', (req: Request, res: Response) => {
-  res.send('Welcome to server');
+  res.send('Welcome to taazafol server');
 });
 
 app.use(
